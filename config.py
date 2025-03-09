@@ -9,7 +9,7 @@ class Config:
     DB_PASSWORD = "tAIVqRV6v15EGtQLydz33Q"  # Tu contraseña
 
     @staticmethod
-    def init_db():
+    def get_connection():
         try:
             # Conexión a la base de datos
             connection = psycopg2.connect(
@@ -27,9 +27,8 @@ class Config:
 
 # Ejecutar la prueba de conexión
 if __name__ == "__main__":
-    connection = Config.init_db()
+    connection = Config.get_connection()
     if connection:
         print("Operación de conexión completada correctamente.")
         # Cerrar la conexión después de la prueba
         connection.close()
-
