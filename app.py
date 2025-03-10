@@ -1,6 +1,6 @@
 import pandas as pd
 from flask import Flask, request, jsonify, send_file
-import os
+import io
 from config import Config
 
 app = Flask(__name__)
@@ -160,12 +160,18 @@ def descargar_reporte_ventas():
         columnas = ["Venta ID", "Fecha", "Total", "Producto ID", "Cantidad", "Precio Unitario", "Subtotal"]
         df = pd.DataFrame(ventas, columns=columnas)
 
-        # Guardar archivo Excel
-        ruta_archivo = "reporte_ventas.xlsx"
-        df.to_excel(ruta_archivo, index=False)
+        # Generar archivo Excel en memoria
+        output = io.BytesIO()
+        df.to_excel(output, index=False, engine='openpyxl')  # Especifica el motor 'openpyxl'
+        output.seek(0)  # Regresar al inicio del buffer
 
         # Enviar archivo como respuesta
-        return send_file(ruta_archivo, as_attachment=True, download_name="reporte_ventas.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        return send_file(
+            output, 
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", 
+            as_attachment=True, 
+            download_name="reporte_ventas.xlsx"
+        )
 
     return jsonify({"error": "Error al conectar con la base de datos"}), 500
 
