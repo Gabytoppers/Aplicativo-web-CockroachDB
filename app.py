@@ -1,4 +1,6 @@
-from flask import Flask, request, jsonify
+import pandas as pd
+from flask import Flask, request, jsonify, send_file
+import os
 from config import Config
 
 app = Flask(__name__)
@@ -132,6 +134,40 @@ def ver_factura(venta_id):
         return jsonify(factura)
 
     return jsonify({"error": "Error al conectar"}), 500
+
+# PARA DESCARGAR REPORTE DE VENTAS EN EXCEL
+@app.route('/descargar_reporte_ventas', methods=['GET'])
+def descargar_reporte_ventas():
+    conn = Config.get_connection()
+    if conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT v.id AS venta_id, v.fecha, v.total, 
+                   dv.producto_id, dv.cantidad, dv.precio_unitario, dv.total AS subtotal
+            FROM ventas v
+            JOIN detalle_venta dv ON v.id = dv.venta_id
+            ORDER BY v.fecha DESC, v.id;
+        """)
+
+        ventas = cursor.fetchall()
+        cursor.close()
+        conn.close()
+
+        if not ventas:
+            return jsonify({"error": "No hay ventas registradas"}), 404
+
+        # Crear DataFrame con los datos
+        columnas = ["Venta ID", "Fecha", "Total", "Producto ID", "Cantidad", "Precio Unitario", "Subtotal"]
+        df = pd.DataFrame(ventas, columns=columnas)
+
+        # Guardar archivo Excel
+        ruta_archivo = "reporte_ventas.xlsx"
+        df.to_excel(ruta_archivo, index=False)
+
+        # Enviar archivo como respuesta
+        return send_file(ruta_archivo, as_attachment=True, download_name="reporte_ventas.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+    return jsonify({"error": "Error al conectar con la base de datos"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
