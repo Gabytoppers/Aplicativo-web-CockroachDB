@@ -64,5 +64,74 @@ def eliminar_producto(id):
         return jsonify({"message": "Producto eliminado"})
     return jsonify({"error": "Error al conectar"}), 500
 
+# CREAR una venta (POST) - Registra una nueva venta
+@app.route('/crear_venta', methods=['POST'])
+def crear_venta():
+    data = request.get_json()  # Recibe JSON con los productos y cantidades
+    productos = data.get('productos')  # Lista de productos vendidos
+    total_venta = sum([producto['cantidad'] * producto['precio_unitario'] for producto in productos])
+
+    # Conexión a la base de datos
+    conn = Config.get_connection()
+    if conn:
+        cursor = conn.cursor()
+
+        # Insertar la venta en la tabla 'ventas'
+        cursor.execute("INSERT INTO ventas (total) VALUES (%s) RETURNING id", (total_venta,))
+        venta_id = cursor.fetchone()[0]  # Obtener el ID de la venta
+
+        # Insertar los detalles de la venta en 'detalle_venta'
+        for producto in productos:
+            cursor.execute("""
+                INSERT INTO detalle_venta (venta_id, producto_id, cantidad, precio_unitario, total)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (venta_id, producto['producto_id'], producto['cantidad'], producto['precio_unitario'], producto['cantidad'] * producto['precio_unitario']))
+
+        conn.commit()  # Confirmar los cambios
+        cursor.close()
+        conn.close()
+
+        return jsonify({"mensaje": "Venta registrada", "venta_id": venta_id, "total": total_venta}), 201
+
+    return jsonify({"error": "Error al conectar"}), 500
+
+# VER una factura (GET) - Muestra los detalles de una venta
+@app.route('/factura/<int:venta_id>', methods=['GET'])
+def ver_factura(venta_id):
+    conn = Config.get_connection()
+    if conn:
+        cursor = conn.cursor()
+
+        # Obtener la información de la venta
+        cursor.execute("SELECT * FROM ventas WHERE id = %s", (venta_id,))
+        venta = cursor.fetchone()
+
+        if not venta:
+            return jsonify({"mensaje": "Venta no encontrada"}), 404
+
+        # Obtener los detalles de la venta
+        cursor.execute("""
+            SELECT p.nombre, dv.cantidad, dv.precio_unitario, dv.total
+            FROM detalle_venta dv
+            JOIN productos p ON p.id = dv.producto_id
+            WHERE dv.venta_id = %s
+        """, (venta_id,))
+        detalles = cursor.fetchall()
+
+        # Crear la factura
+        factura = {
+            "id_venta": venta[0],
+            "fecha": venta[1],
+            "total": venta[2],
+            "productos": [{"nombre": detalle[0], "cantidad": detalle[1], "precio_unitario": detalle[2], "total": detalle[3]} for detalle in detalles]
+        }
+
+        cursor.close()
+        conn.close()
+
+        return jsonify(factura)
+
+    return jsonify({"error": "Error al conectar"}), 500
+
 if __name__ == '__main__':
     app.run(debug=True)
