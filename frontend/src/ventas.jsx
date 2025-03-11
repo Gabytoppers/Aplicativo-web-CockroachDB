@@ -1,8 +1,14 @@
 import './ventas.css'
 import { Link } from "react-router-dom";
 const Ventas = () => {
+    const listarPoductos = (message) => {
+        alert(message);
+        console.log(message);
+    };
+    
     return (
-
+        
+    
         <div className="container">
             <nav className="navbar">
                 <h1 className="logo">Tienda</h1>
@@ -19,12 +25,12 @@ const Ventas = () => {
 
                     <div className="add-product">
                         <h2>Agregar Productos</h2>
-                        <select className="select-product">
+                        <select className="select-product"onClick={()=> listarPoductos()}>
                             <option>Producto 1 - $100</option>
                             <option>Producto 2 - $200</option>
                         </select>
                         <input type="number" className="input" placeholder="Cantidad" />
-                        <button className="button add-btn">🛒 Agregar a la venta</button>
+                        <button className="button add-btn" >🛒 Agregar a la venta</button>
                     </div>
 
                     <div className="sales-summary">

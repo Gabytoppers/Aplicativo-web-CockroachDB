@@ -1,5 +1,24 @@
 import {Link} from "react-router-dom";
+
+const Data = [
+    [1, "Laptop", 1200.50, 10],
+    [2, "Mouse", 25.99, 50],
+    [3, "Teclado", 45.00, 30],
+    [4, "Monitor", 1500.00, 20],
+    [5, "Cargador", 75.00, 40]
+];
 const Inventario = () => {
+    const deleteItem = (message) => {
+        alert(message);
+        console.log(message);
+    }
+
+    const editarItem = (message) => {
+        alert(message);
+        console.log(message);
+    }
+
+
     return (
         <div className="container">
             <nav className="navbar">
@@ -23,35 +42,17 @@ const Inventario = () => {
             </button>
 
             <div className="grid-container">
-                <div className="card">
-                    <h2>Gaseosa</h2>
-                    <p>Precio: $3000</p>
-                    <p>Stock: 50</p>
-                    <div className="button-group">
-                        <button className="edit-btn">✏️ Editar</button>
-                        <button className="delete-btn">🗑 Eliminar</button>
+                {Data.map(([id, nombre, precio, stock]) => (
+                    <div className="card" key={id}>
+                        <h2>{nombre}</h2>
+                        <p>Precio: ${precio}</p>
+                        <p>Stock: {stock}</p>
+                        <div className="button-group">
+                            <button className="edit-btn" onClick={()=>editarItem(id)}>✏️ Editar</button>
+                            <button className="delete-btn" onClick={()=>deleteItem(id)}>🗑 Eliminar</button>
+                        </div>
                     </div>
-                </div>
-
-                <div className="card">
-                    <h2>Arroz</h2>
-                    <p>Precio: $6000</p>
-                    <p>Stock: 40</p>
-                    <div className="button-group">
-                        <button className="edit-btn">✏️ Editar</button>
-                        <button className="delete-btn">🗑 Eliminar</button>
-                    </div>
-                </div>
-
-                <div className="card">
-                    <h2>Cerveza</h2>
-                    <p>Precio: $10000</p>
-                    <p>Stock: 60</p>
-                    <div className="button-group">
-                        <button className="edit-btn">✏️ Editar</button>
-                        <button className="delete-btn">🗑 Eliminar</button>
-                    </div>
-                </div>
+                ))}
             </div>
         </div>
         
