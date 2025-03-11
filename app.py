@@ -1,9 +1,14 @@
 import pandas as pd
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, render_template
 import io
 from config import Config
 
+
+
 app = Flask(__name__)
+
+# @app.route('/')
+# def index():
 
 # CREAR un producto (INSERT)
 @app.route('/productos', methods=['POST'])
@@ -135,52 +140,57 @@ def ver_factura(venta_id):
 
     return jsonify({"error": "Error al conectar"}), 500
 
-# PARA DESCARGAR REPORTE DE VENTAS EN EXCEL
 @app.route('/descargar_reporte_ventas', methods=['GET'])
 def descargar_reporte_ventas():
-    conn = Config.get_connection()
-    
-    if not conn:
-        return jsonify({"error": "Error al conectar con la base de datos"}), 500
-    
-    try:
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT v.id AS venta_id, v.fecha, v.total, 
-                   dv.producto_id, dv.cantidad, dv.precio_unitario, dv.total AS subtotal
-            FROM ventas v
-            JOIN detalle_venta dv ON v.id = dv.venta_id
-            ORDER BY v.fecha DESC, v.id;
-        """)
-        ventas = cursor.fetchall()
+    if request.method == 'GET' and 'download' in request.args:
+        # Lógica para generar y descargar el reporte de ventas
+        conn = Config.get_connection()
 
-        if not ventas:
-            return jsonify({"error": "No hay ventas registradas"}), 404
+        if not conn:
+            return jsonify({"error": "Error al conectar con la base de datos"}), 500
         
-        # Crear DataFrame con los datos
-        columnas = ["Venta ID", "Fecha", "Total", "Producto ID", "Cantidad", "Precio Unitario", "Subtotal"]
-        df = pd.DataFrame(ventas, columns=columnas)
+        try:
+            cursor = conn.cursor()
+            cursor.execute(""" 
+                SELECT v.id AS venta_id, v.fecha, v.total, 
+                       dv.producto_id, dv.cantidad, dv.precio_unitario, dv.total AS subtotal
+                FROM ventas v
+                JOIN detalle_venta dv ON v.id = dv.venta_id
+                ORDER BY v.fecha DESC, v.id;
+            """)
+            ventas = cursor.fetchall()
 
-        # Generar archivo Excel en memoria
-        output = io.BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df.to_excel(writer, index=False)
-        output.seek(0)  # Volver al inicio del buffer
+            if not ventas:
+                return jsonify({"error": "No hay ventas registradas"}), 404
+            
+            # Crear DataFrame con los datos
+            columnas = ["Venta ID", "Fecha", "Total", "Producto ID", "Cantidad", "Precio Unitario", "Subtotal"]
+            df = pd.DataFrame(ventas, columns=columnas)
 
-        # Enviar archivo como respuesta
-        return send_file(
-            output,
-            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            as_attachment=True,
-            download_name="reporte_ventas.xlsx"
-        )
+            # Generar archivo Excel en memoria
+            output = io.BytesIO()
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                df.to_excel(writer, index=False)
+            output.seek(0)  # Volver al inicio del buffer
 
-    except Exception as e:
-        return jsonify({"error": f"Error al generar el reporte: {str(e)}"}), 500
+            # Enviar archivo como respuesta
+            return send_file(
+                output,
+                mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                as_attachment=True,
+                download_name="reporte_ventas.xlsx"
+            )
 
-    finally:
-        cursor.close()
-        conn.close()
+        except Exception as e:
+            return jsonify({"error": f"Error al generar el reporte: {str(e)}"}), 500
+
+        finally:
+            cursor.close()
+            conn.close()
+    
+    # Si no es la solicitud de descarga, simplemente renderizamos el HTML
+    return render_template('index.html')
+
 
 if __name__ == '__main__':
     app.run(debug=True)
