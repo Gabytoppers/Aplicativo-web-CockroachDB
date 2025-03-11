@@ -9,7 +9,7 @@ const Inventario = () => {
                     <Link to="/ventas" className="nav-item">Ventas</Link>
                 </div>
             </nav>
-
+            <div className="container-1">
             <h1 className="title">Gestión de Productos</h1>
 
             <div className="input-group">
@@ -53,8 +53,8 @@ const Inventario = () => {
                     </div>
                 </div>
             </div>
-
-
+        </div>
+        
         </div>
 
 

@@ -1,0 +1,140 @@
+/* CSS Ventas */
+/* Estilos Generales */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+    background-color: #ffffff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    font-size: 24px;
+    color: #007bff;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1rem;
+}
+
+.nav-item {
+    text-decoration: none;
+    color: #555;
+    font-weight: bold;
+}
+
+.nav-item.active {
+    color: #007bff;
+}
+
+.container-1 {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 1rem;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.sales-section {
+    display: flex;
+    gap: 2rem;
+}
+
+.add-product,
+.sales-summary {
+    flex: 1;
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+.select-product,
+.input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+}
+
+.add-btn {
+    background-color: #007bff;
+}
+
+.download-btn {
+    background-color: #28a745;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+}
+
+.total {
+    display: flex;
+    justify-content: space-between;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Asegura que el input tenga el tamaño correcto */
+.input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box; /* Evita que padding y border modifiquen el tamaño */
+    appearance: none; /* Elimina estilos predeterminados del navegador */
+}
+
+/* Oculta las flechas del input number en Chrome, Safari, Edge, y Opera */
+.input[type="number"]::-webkit-inner-spin-button, 
+.input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Para Firefox */
+.input[type="number"] {
+    -moz-appearance: textfield;
+}
