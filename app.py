@@ -139,7 +139,11 @@ def ver_factura(venta_id):
 @app.route('/descargar_reporte_ventas', methods=['GET'])
 def descargar_reporte_ventas():
     conn = Config.get_connection()
-    if conn:
+    
+    if not conn:
+        return jsonify({"error": "Error al conectar con la base de datos"}), 500
+    
+    try:
         cursor = conn.cursor()
         cursor.execute("""
             SELECT v.id AS venta_id, v.fecha, v.total, 
@@ -148,32 +152,35 @@ def descargar_reporte_ventas():
             JOIN detalle_venta dv ON v.id = dv.venta_id
             ORDER BY v.fecha DESC, v.id;
         """)
-
         ventas = cursor.fetchall()
-        cursor.close()
-        conn.close()
 
         if not ventas:
             return jsonify({"error": "No hay ventas registradas"}), 404
-
+        
         # Crear DataFrame con los datos
         columnas = ["Venta ID", "Fecha", "Total", "Producto ID", "Cantidad", "Precio Unitario", "Subtotal"]
         df = pd.DataFrame(ventas, columns=columnas)
 
         # Generar archivo Excel en memoria
         output = io.BytesIO()
-        df.to_excel(output, index=False, engine='openpyxl')  # Especifica el motor 'openpyxl'
-        output.seek(0)  # Regresar al inicio del buffer
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False)
+        output.seek(0)  # Volver al inicio del buffer
 
         # Enviar archivo como respuesta
         return send_file(
-            output, 
-            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", 
-            as_attachment=True, 
+            output,
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            as_attachment=True,
             download_name="reporte_ventas.xlsx"
         )
 
-    return jsonify({"error": "Error al conectar con la base de datos"}), 500
+    except Exception as e:
+        return jsonify({"error": f"Error al generar el reporte: {str(e)}"}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
 
 if __name__ == '__main__':
     app.run(debug=True)
