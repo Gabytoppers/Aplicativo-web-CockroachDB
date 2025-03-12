@@ -39,7 +39,13 @@ def obtener_productos():
         productos = cursor.fetchall()
         cursor.close()
         conn.close()
-        return jsonify(productos)
+        productos_json = [
+            {"id": p[0], "nombre": p[1], "precio": float(p[2]), "stock": int(p[3])}
+
+            for p in productos
+        ]
+
+        return jsonify({"productos": productos_json}), 200
     return jsonify({"error": "Error al conectar"}), 500
 
 # ACTUALIZAR un producto (UPDATE)
