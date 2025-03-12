@@ -1,5 +1,6 @@
-Flask==2.1.2
-openpyxl==3.0.10
-psycopg2-binary==2.9.3
-
-    
+flask
+pandas
+openpyxl
+psycopg2-binary
+gunicorn
+flask-cors
